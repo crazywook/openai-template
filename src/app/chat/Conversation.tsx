@@ -5,7 +5,7 @@ export default function Conversation ({
   answer,
 }: {
   prompt: string
-  answer: string
+  answer: string | JSX.Element
 }) {
   return (
     <>

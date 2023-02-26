@@ -1,31 +1,49 @@
 'use client'
 import { checkEnter, checkOnlyEnter } from '@/util/keyboard'
 import TextareaAutosize from '@mui/base/TextareaAutosize'
+import Image from 'next/image'
 import React, { ChangeEventHandler, useState } from 'react'
 import styles from './chat.module.scss'
 import Conversation from './Conversation'
+import loadingIcon from './SpinnerTrans200.png'
 
 interface Conversation {
   prompt: string
-  answer: string
+  answer: string | JSX.Element
+}
+interface State {
+  thinkingState?: 'thinking' | 'done' | 'error'
 }
 
 export default function Dashboard () {
   const [prompt, setPrompt] = useState('')
-  const [state, setState] = useState({
-    isFetching: false,
+  const [state, setState] = useState<State>({
+    thinkingState: undefined,
   })
 
   const [conversations, setConversation] = useState<Conversation[]>([])
   const [answers, setAnswer] = useState<string[]>([])
 
   const submit = async () => {
-    setState({ isFetching: true })
     
+    const currentPrompt = prompt
+    setPrompt('')
+    console.log('currentPrompt' ,currentPrompt)
+    setState({ thinkingState: 'thinking' })
+
+    const newConversations = [
+      ...conversations,
+      {
+        prompt: currentPrompt,
+        answer: <>thinking...<Image height={20} src={loadingIcon} alt='loading'/></>,
+      },
+    ]
+    setConversation(newConversations)
+
     const result = await fetch('/api/complete-chat-gpt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt: currentPrompt }),
     })
       .then(async res => await res.json())
       .catch(e => {
@@ -36,15 +54,20 @@ export default function Dashboard () {
       const answer: string = result.answer
       setAnswer([...answers, answer])
       setConversation([
-        ...conversations,
+        ...newConversations.slice(0, -1),
         {
-          prompt,
+          prompt: currentPrompt,
           answer,
         },
       ])
     }
 
-    setState({ isFetching: false })
+    await new Promise(resolve => {
+      setTimeout(() => {
+        resolve('')
+      }, 1000)
+    })
+    setState({ thinkingState: 'done' })
   }
 
   const handlePromptChange: ChangeEventHandler<HTMLTextAreaElement> = e => {
@@ -55,7 +78,6 @@ export default function Dashboard () {
     if (checkOnlyEnter(e)) {
       e.preventDefault()
       await submit()
-      setPrompt('')
       return
     }
 
