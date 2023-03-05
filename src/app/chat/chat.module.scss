@@ -1,3 +1,27 @@
+.openai {
+  height: 80vh;
+  display: grid;
+  grid-template-columns: 10rem 1fr 15rem;
+}
+
+.main {
+  padding: 1rem;
+}
+
+.left-side {
+  height: 100%;
+  padding: 1rem;
+  // border: 1px solid #ccc;
+}
+.right-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 1rem;
+  // border: 1px solid #ccc;
+}
+
 .prompt {
   width: 50vw;
   padding: .5rem;
